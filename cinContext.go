@@ -13,8 +13,8 @@ type Context struct {
 	Request         *http.Request       // Публичное поле для Request
 }
 
-// NewCustomContext создает новый экземпляр CustomContext
-func NewContext(parent context.Context, w http.ResponseWriter, r *http.Request) *Context {
+// NewContext создает новый экземпляр Context
+func newContext(parent context.Context, w http.ResponseWriter, r *http.Request) *Context {
 	return &Context{
 		Context:        parent,
 		ResponseWriter: w,

@@ -21,6 +21,9 @@ type HandlerFunc func(ctx *Context) Response
 
 // Handle регистрирует обработчик для указанного пути
 func (r *Router) registerHandler(method string, pattern string, handler HandlerFunc) {
+	assert1(pattern[0] == '/', "path must begin with '/'")
+	assert1(method != "", "HTTP method can not be empty")
+
 	r.mux.HandleFunc(pattern, func(w http.ResponseWriter, req *http.Request) {
 		if req.Method != method {
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -28,7 +31,7 @@ func (r *Router) registerHandler(method string, pattern string, handler HandlerF
 		}
 
 		// Создаем кастомный контекст
-		ctx := NewContext(req.Context(), w, req)
+		ctx := newContext(req.Context(), w, req)
 		defer ctx.Request.Body.Close()
 
 		// Вызываем пользовательский обработчик
@@ -59,6 +62,7 @@ func (r *Router) DELETE(path string, handler HandlerFunc) {
 	r.registerHandler(http.MethodDelete, path, handler)
 }
 
+// PATCH регистрирует обработчик для PATCH-запросов
 func (r *Router) PATCH(path string, handler HandlerFunc) {
 	r.registerHandler(http.MethodPatch, path, handler)
 }
