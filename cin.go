@@ -1,7 +1,6 @@
 package cin
 
 import (
-	"fmt"
 	"net/http"
 )
 
@@ -23,18 +22,20 @@ type HandlerFunc func(ctx *Context) Response
 // Handle регистрирует обработчик для указанного пути
 func (r *Router) registerHandler(method string, pattern string, handler HandlerFunc) {
 	r.mux.HandleFunc(pattern, func(w http.ResponseWriter, req *http.Request) {
+		if req.Method != method {
+			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		// Создаем кастомный контекст
 		ctx := NewContext(req.Context(), w, req)
 		defer ctx.Request.Body.Close()
 
-		// Проверяем метод
-		if req.Method != method {
-			http.Error(w, fmt.Sprintf("Invalid request method. Expected %s", method), http.StatusMethodNotAllowed)
-			return
-		}
-
 		// Вызываем пользовательский обработчик
-		handler(ctx).out(ctx)
+		response := handler(ctx)
+		if response != nil {
+			response.out(ctx)
+		}
 	})
 }
 

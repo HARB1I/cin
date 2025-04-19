@@ -26,21 +26,7 @@ func (g *Group) Handle(method, path string, handler HandlerFunc) {
 	// Создаем цепочку middleware
 	wrappedHandler := chainMiddleware(handler, g.middleware...)
 
-	g.router.mux.HandleFunc(fullPath, func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != method {
-			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
-			return
-		}
-		// Создаем контекст
-		ctx := NewContext(r.Context(), w, r)
-		defer ctx.Request.Body.Close()
-
-		// Вызываем обработчик
-		response := wrappedHandler(ctx)
-		if response != nil {
-			response.out(ctx)
-		}
-	})
+	g.router.registerHandler(method, fullPath, wrappedHandler)
 }
 
 // chainMiddleware объединяет middleware в одну цепочку
